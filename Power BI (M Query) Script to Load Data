@@ -1,0 +1,5 @@
+let
+    Source = Sql.Database("YourServerName", "YourDatabaseName"),
+    TransactionData = Source{[Schema="dbo", Item="TransactionSummary"]}[Data]
+in
+    TransactionData
