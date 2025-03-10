@@ -1,0 +1,38 @@
+# Default values for debugging
+$tenantId = "00000000-0000-0000-0000-000000000000"
+$clientId = "00000000-0000-0000-0000-000000000000"
+$clientSecret = "your-client-secret"
+$groupId = "00000000-0000-0000-0000-000000000000"
+$datasetId = "00000000-0000-0000-0000-000000000000"
+
+# Authentication request
+$body = @{
+    grant_type    = "client_credentials"
+    client_id     = $clientId
+    client_secret = $clientSecret
+    resource      = "https://analysis.windows.net/powerbi/api"
+}
+
+# Get authentication token
+try {
+    $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/token" -Method Post -Body $body
+    $accessToken = $tokenResponse.access_token
+    Write-Output "Successfully obtained authentication token."
+} catch {
+    Write-Output "Failed to get authentication token: $_"
+    exit 1
+}
+
+# Trigger dataset refresh
+$refreshUrl = "https://api.powerbi.com/v1.0/myorg/groups/$groupId/datasets/$datasetId/refreshes"
+$headers = @{
+    Authorization = "Bearer $accessToken"
+    ContentType   = "application/json"
+}
+
+try {
+    $response = Invoke-RestMethod -Uri $refreshUrl -Method Post -Headers $headers
+    Write-Output "Dataset refresh triggered successfully!"
+} catch {
+    Write-Output "Failed to refresh dataset: $_"
+}
